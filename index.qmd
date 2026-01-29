@@ -51,3 +51,81 @@ knitr::opts_chunk$set(margin1    = TRUE,
                       fig.height = eps * 5, # default is 5
                       fig.width  = eps * 7) # default is 7 and maximum possible is 8.3
 ```
+
+
+## Contants
+
+```{r}
+if (grepl("arc|hoisy", Sys.getenv("USER"))) {
+  path2data <- paste0("~/Library/CloudStorage/OneDrive-OxfordUniversityClinical",
+                      "ResearchUnit/GitHub/choisy/serum_bank/20FL_samples/",
+                      "20FL_samples/")
+}
+```
+
+## Packages
+
+Required packages:
+
+```{r}
+required <- c("readxl", "stringr", "purrr")
+```
+
+Installing those that are not installed yet:
+
+```{r}
+to_install <- required[! required %in% installed.packages()[,"Package"]]
+if (length(to_install)) install.packages(to_install)
+```
+
+Loading the packages for interactive use:
+
+```{r warning = FALSE, message = FALSE}
+invisible(sapply(required, library, character.only = TRUE))
+```
+
+## Functions
+
+```{r}
+set_names2 <- function(x) {
+  setNames(x, x |>
+             str_remove("^.*/") |> 
+             str_remove(".xlsx$"))
+}
+```
+
+```{r}
+remove_header <- function(x) x[(tail(which(is.na(x[[1]])), 1) - 2):nrow(x), ]
+```
+
+
+## Reading the data
+
+```{r}
+a <- path2data |>
+  list.files(".xlsx$", full.names = TRUE, recursive = TRUE) |> 
+  grep("~", x = _, value = TRUE, invert = TRUE)
+```
+
+```{r}
+b <- a[1:5] |> 
+  set_names2() |> 
+  map(read_excel)
+```
+
+```{r}
+b |> 
+  map(remove_header)
+```
+
+```{r}
+x <- b[[1]]
+```
+
+
+```{r}
+which(is.na(b[[1]][[1]]))
+```
+
+
+
