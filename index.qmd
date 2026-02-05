@@ -102,13 +102,6 @@ invisible(sapply(required, library, character.only = TRUE))
 
 ## Functions
 
-```{r}
-set_names2 <- function(x) {
-  setNames(x, x |>
-             str_remove("^.*/") |> 
-             str_remove(".xlsx$"))
-}
-```
 
 ## Reading the data
 
@@ -133,5 +126,9 @@ if (file_exists("dataset.rds")) {
     bind_rows()
   saveRDScache(dataset, "dataset.rds")
 }
+```
+
+```{r}
+
 ```
 
