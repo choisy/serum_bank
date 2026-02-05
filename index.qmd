@@ -55,20 +55,36 @@ knitr::opts_chunk$set(margin1    = TRUE,
 
 ## Contants
 
+The OneDrive root:
+
 ```{r}
-if (grepl("arc|hoisy", Sys.getenv("USER"))) {
-  path2data <- paste0("~/Library/CloudStorage/OneDrive-OxfordUniversityClinical",
-                      "ResearchUnit/GitHub/choisy/serum_bank/20FL_samples/",
-                      "20FL_samples/")
-}
+OneDrive <- "~/Library/CloudStorage/OneDrive-OxfordUniversityClinicalResearchUnit"
 ```
+
+Path to raw data:
+
+```{r}
+path2data <- paste0(OneDrive, "/SPECIAL/MODELLING/Hoang Nhung/20FL/20FL_samples/",
+                    "20FL_samples_v2/standardized_20FL_metadata/")
+```
+
+```{r include = FALSE}
+path2cache <- paste0(stringr::str_replace(getwd(), Sys.getenv("HOME"), OneDrive),
+                     "/cache/")
+if (! dir.exists(path2cache)) dir.create(path2cache)
+make_path <- function(x) paste0(path2cache, x)
+file_exists <- function(x) file.exists(make_path(x))
+readRDScache <- function(x) readRDS(make_path(x))
+saveRDScache <- function(object, file) saveRDS(object, make_path(file))
+```
+
 
 ## Packages
 
 Required packages:
 
 ```{r}
-required <- c("readxl", "stringr", "purrr")
+required <- c("readxl", "stringr", "purrr", "dplyr")
 ```
 
 Installing those that are not installed yet:
@@ -94,38 +110,28 @@ set_names2 <- function(x) {
 }
 ```
 
-```{r}
-remove_header <- function(x) x[(tail(which(is.na(x[[1]])), 1) - 2):nrow(x), ]
-```
-
-
 ## Reading the data
 
-```{r}
-a <- path2data |>
+Takes 3.5":
+
+```{r eval = FALSE}
+dataset <- path2data |>
   list.files(".xlsx$", full.names = TRUE, recursive = TRUE) |> 
-  grep("~", x = _, value = TRUE, invert = TRUE)
+  grep("~", x = _, value = TRUE, invert = TRUE) |> 
+  map(read_excel) |> 
+  bind_rows()
 ```
 
-```{r}
-b <- a[1:5] |> 
-  set_names2() |> 
-  map(read_excel)
+```{r include = FALSE}
+if (file_exists("dataset.rds")) {
+  dataset <- readRDScache("dataset.rds")
+} else {
+  dataset <- path2data |>
+    list.files(".xlsx$", full.names = TRUE, recursive = TRUE) |> 
+    grep("~", x = _, value = TRUE, invert = TRUE) |> 
+    map(read_excel) |>
+    bind_rows()
+  saveRDScache(dataset, "dataset.rds")
+}
 ```
-
-```{r}
-b |> 
-  map(remove_header)
-```
-
-```{r}
-x <- b[[1]]
-```
-
-
-```{r}
-which(is.na(b[[1]][[1]]))
-```
-
-
 
