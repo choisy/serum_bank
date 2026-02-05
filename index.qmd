@@ -78,13 +78,18 @@ readRDScache <- function(x) readRDS(make_path(x))
 saveRDScache <- function(object, file) saveRDS(object, make_path(file))
 ```
 
+```{r}
+bissexts <- seq(1952, 2030, 4)
+not31 <- c(2, 4, 6, 9, 11)
+```
+
 
 ## Packages
 
 Required packages:
 
 ```{r}
-required <- c("readxl", "stringr", "purrr", "dplyr")
+required <- c("readxl", "stringr", "purrr", "dplyr", "lubridate", "stringi")
 ```
 
 Installing those that are not installed yet:
@@ -102,33 +107,131 @@ invisible(sapply(required, library, character.only = TRUE))
 
 ## Functions
 
+A tuning of the `grep()` function:
+
+```{r}
+grep2 <- function(...) grep(..., ignore.case = TRUE, value = TRUE)
+```
+
 
 ## Reading the data
+
+```{r}
+recode_sex <- function(x) {
+  tmp <- na.exclude(unique(x$Gender))
+  females <- c("F", "f", grep2("^.a", grep2("^n", tmp), invert = TRUE))
+  males <- setdiff(tmp, females)
+  mutate(x, across(Gender, ~ case_match(.x, females ~ "female", males ~ "male",
+                                        .default = .x)))
+}
+```
 
 Takes 3.5":
 
 ```{r eval = FALSE}
-dataset <- path2data |>
+dataset <- path2data |> 
   list.files(".xlsx$", full.names = TRUE, recursive = TRUE) |> 
   grep("~", x = _, value = TRUE, invert = TRUE) |> 
   map(read_excel) |> 
-  bind_rows()
+  bind_rows() |> 
+  select(-c(Note, Sample_type, patient_ID, Initial_name, starts_with("Address"),
+            Exact_age_calculated, Check_age_in_correct_group, Age_ontube)) |> 
+  filter_out(is.na(Sample_ID)) |> 
+  mutate(across(Collection_year, ~ replace_values(.x, "202" ~ "2022", "21" ~ "2021")),
+         across(Birth_year, ~ replace_values(.x, "86" ~ "1986")),
+         across(ends_with(c("day", "month", "year")), as.integer),
+         across(ends_with("month"), ~ if_else(.x < 1 | 12 < .x, NA_integer_, .x)),
+         across(ends_with("day"), ~ if_else(.x > 31, NA_integer_, .x)),
+         across(Birth_day, ~ if_else(.x > 30 & Birth_month %in% not31,
+                                     NA_integer_, .x)),
+         across(Collection_day, ~ if_else(.x > 30 & Collection_month %in% not31,
+                                          NA_integer_, .x)),
+         across(Birth_day, ~ if_else(.x > 28 & Birth_month == 2 &
+                                       ! Birth_year %in% bissexts,
+                                     NA_integer_, .)),
+         across(Collection_day, ~ if_else(.x > 28 & Collection_month == 2 &
+                                            ! Collection_year %in% bissexts,
+                                          NA_integer_, .)),
+         across(Gender, ~ .x |>
+                  stri_trans_general("any-ascii") |>
+                  tolower() |> 
+                  replace_values(c("f", "nu", "nuu", "nux", "nnu") ~ "female",
+                                 c("m", "nam", ",m")               ~   "male")))
 ```
+
+```{r}
+dataset |> 
+  mutate(across(Province, ~ .x |>
+                  stri_trans_general("any-ascii") |> 
+                  replace_values("Can Tho_former Soc Trang" ~ "Can Tho",
+                                 "Daklak" ~ "Dak Lak",
+                                 "Dong Nai_former Binh Phuoc" ~ "Dong Nai",
+                                 "DT" ~ "Dong Thap",
+                                 "Gia Lai_fomer Binh Dinh" ~ "Gia Lai",
+                                 "Gia Lai_former Binh Dinh" ~ "Gia Lai",
+                                 "HCM" ~ "HCMC",
+                                 "HUE" ~ "Hue",
+                                 "QN" ~ "Quang Ngai",
+                                 "Nu" ~ "Quang Ngai"))) |> 
+  pull(Province) |> 
+  table()
+```
+
 
 ```{r include = FALSE}
 if (file_exists("dataset.rds")) {
   dataset <- readRDScache("dataset.rds")
 } else {
-  dataset <- path2data |>
+  dataset <- path2data |> 
     list.files(".xlsx$", full.names = TRUE, recursive = TRUE) |> 
     grep("~", x = _, value = TRUE, invert = TRUE) |> 
-    map(read_excel) |>
-    bind_rows()
+    map(read_excel) |> 
+    bind_rows() |> 
+    select(-c(Note, Sample_type, patient_ID, Initial_name, starts_with("Address"),
+              Exact_age_calculated, Check_age_in_correct_group, Age_ontube)) |> 
+    filter_out(is.na(Sample_ID)) |> 
+    mutate(across(Collection_year, ~ replace_values(.x, "202" ~ "2022", "21" ~ "2021")),
+           across(Birth_year, ~ replace_values(.x, "86" ~ "1986")),
+           across(ends_with(c("day", "month", "year")), as.integer),
+           across(ends_with("month"), ~ if_else(.x < 1 | 12 < .x, NA_integer_, .x)),
+           across(ends_with("day"), ~ if_else(.x > 31, NA_integer_, .x)),
+           across(Birth_day, ~ if_else(.x > 30 & Birth_month %in% not31,
+                                       NA_integer_, .x)),
+           across(Collection_day, ~ if_else(.x > 30 & Collection_month %in% not31,
+                                            NA_integer_, .x)),
+           across(Birth_day, ~ if_else(.x > 28 & Birth_month == 2 &
+                                         ! Birth_year %in% bissexts,
+                                       NA_integer_, .)),
+           across(Collection_day, ~ if_else(.x > 28 & Collection_month == 2 &
+                                              ! Collection_year %in% bissexts,
+                                            NA_integer_, .)),
+           across(Gender, ~ .x |>
+                    stri_trans_general("any-ascii") |>
+                    tolower() |> 
+                    replace_values(c("f", "nu", "nuu", "nux", "nnu") ~ "female",
+                                   c("m", "nam", ",m") ~ "male")))
   saveRDScache(dataset, "dataset.rds")
 }
 ```
 
 ```{r}
+map_int(dataset, ~ sum(is.na(.x)))
+```
 
+0: Out-patient, not admitted to any ward.
+1: Respiratory/chest ward
+2: Gastroenterology ward
+3: General surgical ward
+4: Trauma/Orthopedics
+5: Intensive care unit
+6: Other ward (not listed above)
+7: Unknown
+
+## Looking at the data
+
+```{r}
+dataset |> 
+  filter(is.na(Collection_year)) |> 
+  print(n = Inf)
 ```
 
