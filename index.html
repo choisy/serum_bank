@@ -86,6 +86,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#packages" id="toc-packages" class="nav-link" data-scroll-target="#packages"><span class="header-section-number">2</span> Packages</a></li>
   <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions"><span class="header-section-number">3</span> Functions</a></li>
   <li><a href="#reading-the-data" id="toc-reading-the-data" class="nav-link" data-scroll-target="#reading-the-data"><span class="header-section-number">4</span> Reading the data</a></li>
+  <li><a href="#looking-at-the-data" id="toc-looking-at-the-data" class="nav-link" data-scroll-target="#looking-at-the-data"><span class="header-section-number">5</span> Looking at the data</a></li>
   </ul>
 </nav>
 </div>
@@ -121,43 +122,134 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>path2data <span class="ot">&lt;-</span> <span class="fu">paste0</span>(OneDrive, <span class="st">"/SPECIAL/MODELLING/Hoang Nhung/20FL/20FL_samples/"</span>,</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"20FL_samples_v2/standardized_20FL_metadata/"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>bissexts <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">1952</span>, <span class="dv">2030</span>, <span class="dv">4</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>not31 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">6</span>, <span class="dv">9</span>, <span class="dv">11</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 </section>
 <section id="packages" class="level2" data-number="2">
 <h2 data-number="2" class="anchored" data-anchor-id="packages"><span class="header-section-number">2</span> Packages</h2>
 <p>Required packages:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>required <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"readxl"</span>, <span class="st">"stringr"</span>, <span class="st">"purrr"</span>, <span class="st">"dplyr"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>required <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"readxl"</span>, <span class="st">"stringr"</span>, <span class="st">"purrr"</span>, <span class="st">"dplyr"</span>, <span class="st">"lubridate"</span>, <span class="st">"stringi"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Installing those that are not installed yet:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>to_install <span class="ot">&lt;-</span> required[<span class="sc">!</span> required <span class="sc">%in%</span> <span class="fu">installed.packages</span>()[,<span class="st">"Package"</span>]]</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">length</span>(to_install)) <span class="fu">install.packages</span>(to_install)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>to_install <span class="ot">&lt;-</span> required[<span class="sc">!</span> required <span class="sc">%in%</span> <span class="fu">installed.packages</span>()[,<span class="st">"Package"</span>]]</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">length</span>(to_install)) <span class="fu">install.packages</span>(to_install)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Loading the packages for interactive use:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">sapply</span>(required, library, <span class="at">character.only =</span> <span class="cn">TRUE</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">sapply</span>(required, library, <span class="at">character.only =</span> <span class="cn">TRUE</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="functions" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="functions"><span class="header-section-number">3</span> Functions</h2>
+<p>A tuning of the <code>grep()</code> function:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>set_names2 <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">setNames</span>(x, x <span class="sc">|&gt;</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>             <span class="fu">str_remove</span>(<span class="st">"^.*/"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>             <span class="fu">str_remove</span>(<span class="st">".xlsx$"</span>))</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>grep2 <span class="ot">&lt;-</span> <span class="cf">function</span>(...) <span class="fu">grep</span>(..., <span class="at">ignore.case =</span> <span class="cn">TRUE</span>, <span class="at">value =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>A function that insert a character string at a given position inside another character string:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>insert <span class="ot">&lt;-</span> <span class="cf">function</span>(x, at, what) {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_sub</span>(x, at, at <span class="sc">-</span> <span class="dv">1</span>) <span class="ot">&lt;-</span> what</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  x</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="reading-the-data" class="level2" data-number="4">
 <h2 data-number="4" class="anchored" data-anchor-id="reading-the-data"><span class="header-section-number">4</span> Reading the data</h2>
 <p>Takes 3.5”:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="ot">&lt;-</span> path2data <span class="sc">|&gt;</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list.files</span>(<span class="st">".xlsx$"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grep</span>(<span class="st">"~"</span>, <span class="at">x =</span> _, <span class="at">value =</span> <span class="cn">TRUE</span>, <span class="at">invert =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(read_excel) <span class="sc">|&gt;</span> </span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="ot">&lt;-</span> path2data <span class="sc">|&gt;</span> </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list.files</span>(<span class="st">".xlsx$"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grep</span>(<span class="st">"~"</span>, <span class="at">x =</span> _, <span class="at">value =</span> <span class="cn">TRUE</span>, <span class="at">invert =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(read_excel) <span class="sc">|&gt;</span> </span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(Note, Sample_type, patient_ID, Initial_name, <span class="fu">starts_with</span>(<span class="st">"Address"</span>),</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>            Exact_age_calculated, Check_age_in_correct_group, Age_ontube)) <span class="sc">|&gt;</span> </span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter_out</span>(<span class="fu">is.na</span>(Sample_ID)) <span class="sc">|&gt;</span> </span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(Collection_year, <span class="sc">~</span> <span class="fu">replace_values</span>(.x, <span class="st">"202"</span> <span class="sc">~</span> <span class="st">"2022"</span>, <span class="st">"21"</span> <span class="sc">~</span> <span class="st">"2021"</span>)),</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Birth_year, <span class="sc">~</span> <span class="fu">replace_values</span>(.x, <span class="st">"86"</span> <span class="sc">~</span> <span class="st">"1986"</span>)),</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(<span class="fu">ends_with</span>(<span class="fu">c</span>(<span class="st">"day"</span>, <span class="st">"month"</span>, <span class="st">"year"</span>)), as.integer),</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(<span class="fu">ends_with</span>(<span class="st">"month"</span>), <span class="sc">~</span> <span class="fu">if_else</span>(.x <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">|</span> <span class="dv">12</span> <span class="sc">&lt;</span> .x, <span class="cn">NA_integer_</span>, .x)),</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(<span class="fu">ends_with</span>(<span class="st">"day"</span>), <span class="sc">~</span> <span class="fu">if_else</span>(.x <span class="sc">&gt;</span> <span class="dv">31</span>, <span class="cn">NA_integer_</span>, .x)),</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Birth_day, <span class="sc">~</span> <span class="fu">if_else</span>(.x <span class="sc">&gt;</span> <span class="dv">30</span> <span class="sc">&amp;</span> Birth_month <span class="sc">%in%</span> not31,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>                                     <span class="cn">NA_integer_</span>, .x)),</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Collection_day, <span class="sc">~</span> <span class="fu">if_else</span>(.x <span class="sc">&gt;</span> <span class="dv">30</span> <span class="sc">&amp;</span> Collection_month <span class="sc">%in%</span> not31,</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>                                          <span class="cn">NA_integer_</span>, .x)),</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Birth_day, <span class="sc">~</span> <span class="fu">if_else</span>(.x <span class="sc">&gt;</span> <span class="dv">28</span> <span class="sc">&amp;</span> Birth_month <span class="sc">==</span> <span class="dv">2</span> <span class="sc">&amp;</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>                                       <span class="sc">!</span> Birth_year <span class="sc">%in%</span> bissexts,</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>                                     <span class="cn">NA_integer_</span>, .)),</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Collection_day, <span class="sc">~</span> <span class="fu">if_else</span>(.x <span class="sc">&gt;</span> <span class="dv">28</span> <span class="sc">&amp;</span> Collection_month <span class="sc">==</span> <span class="dv">2</span> <span class="sc">&amp;</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>                                            <span class="sc">!</span> Collection_year <span class="sc">%in%</span> bissexts,</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>                                          <span class="cn">NA_integer_</span>, .)),</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Gender, <span class="sc">~</span> .x <span class="sc">|&gt;</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">stri_trans_general</span>(<span class="st">"any-ascii"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">tolower</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">replace_values</span>(<span class="fu">c</span>(<span class="st">"f"</span>, <span class="st">"nu"</span>, <span class="st">"nuu"</span>, <span class="st">"nux"</span>, <span class="st">"nnu"</span>) <span class="sc">~</span> <span class="st">"female"</span>,</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>                                 <span class="fu">c</span>(<span class="st">"m"</span>, <span class="st">"nam"</span>, <span class="st">",m"</span>)               <span class="sc">~</span>   <span class="st">"male"</span>)),</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Hospital_name, <span class="sc">~</span> <span class="fu">stri_trans_general</span>(.x, <span class="st">"any-ascii"</span>)),</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Province, <span class="sc">~</span> .x <span class="sc">|&gt;</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">stri_trans_general</span>(<span class="st">"any-ascii"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">replace_values</span>(<span class="st">"Can Tho_former Soc Trang"</span>   <span class="sc">~</span> <span class="st">"Can Tho"</span>,</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"Daklak"</span>                     <span class="sc">~</span> <span class="st">"Dak Lak"</span>,</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"Dong Nai_former Binh Phuoc"</span> <span class="sc">~</span> <span class="st">"Dong Nai"</span>,</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"DT"</span>                         <span class="sc">~</span> <span class="st">"Dong Thap"</span>,</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"Gia Lai_fomer Binh Dinh"</span>    <span class="sc">~</span> <span class="st">"Gia Lai"</span>,</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"Gia Lai_former Binh Dinh"</span>   <span class="sc">~</span> <span class="st">"Gia Lai"</span>,</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"HCM"</span>                        <span class="sc">~</span> <span class="st">"HCMC"</span>,</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"HUE"</span>                        <span class="sc">~</span> <span class="st">"Hue"</span>,</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"QN"</span>                         <span class="sc">~</span> <span class="st">"Quang Ngai"</span>,</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"Nu"</span>                         <span class="sc">~</span> <span class="st">"Quang Ngai"</span>)),</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Participant_no, <span class="sc">~</span> <span class="fu">sprintf</span>(<span class="st">"%04s"</span>, .x)),</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Collection_no,  <span class="sc">~</span> <span class="fu">sprintf</span>(<span class="st">"%02s"</span>, .x)),</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Sample_ID, <span class="sc">~</span> <span class="fu">str_remove_all</span>(.x, <span class="st">" "</span>)),</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Sample_ID, <span class="sc">~</span> <span class="fu">ifelse</span>(<span class="fu">nchar</span>(.x) <span class="sc">&lt;</span> <span class="dv">15</span>, <span class="fu">insert</span>(.x, <span class="dv">13</span>, <span class="st">"0"</span>), .x)),</span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Age_group, <span class="sc">~</span> .x <span class="sc">|&gt;</span></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">str_remove_all</span>(<span class="st">" "</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">str_replace</span>(<span class="st">"≤&amp;&lt;"</span>, <span class="st">","</span>)),</span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Age_group, <span class="sc">~</span> <span class="fu">paste0</span>(<span class="st">"["</span>, .x, <span class="st">")"</span>)),</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Dept., <span class="sc">~</span> .x <span class="sc">|&gt;</span></span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">stri_trans_general</span>(<span class="st">"any-ascii"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">tolower</span>()),</span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Dept., <span class="sc">~</span> <span class="fu">case_when</span>(</span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_starts</span>(.x, <span class="st">"kha|p|khoa kham benh"</span>) <span class="sc">~</span> <span class="st">"0"</span>,</span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_starts</span>(.x, <span class="st">"nh|nn|no|ns|nt|th|ti|tt|khoa nh|khoa no|mat|tk|tm"</span>) <span class="sc">~</span> <span class="st">"2"</span>,</span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_starts</span>(.x, <span class="st">"ng| khoa ngoai nhi|khoa ngoai nhi"</span>) <span class="sc">~</span> <span class="st">"3"</span>,</span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_starts</span>(.x, <span class="st">"chan|ccth|ctch|khoa chan thuong"</span>) <span class="sc">~</span> <span class="st">"4"</span>,</span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_starts</span>(.x, <span class="st">"hs|hctc-cdn|khoa icu"</span>) <span class="sc">~</span> <span class="st">"5"</span>,</span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_starts</span>(.x, <span class="fu">paste0</span>(<span class="st">"cap|d|g|l|r|s|ta|tr|u|y| khoa cap cuu nhi| khoa noi"</span>,</span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">" nhi|hhls|khoa cap cuu nhi|khoa don nguyen dich vu "</span>,</span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"nhi|khoa lien chuyen khoa|khoa sanh|khoa so sinh|kl"</span>,</span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"ck|cc"</span>)) <span class="sc">~</span> <span class="st">"6"</span>,</span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a>           <span class="at">.default =</span> .x)),</span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(Dept., as.numeric))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<p>Hospital departments:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>departments <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Out-patient, not admitted to any ward"</span>,</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Respiratory/chest ward"</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Gastroenterology ward"</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"General surgical ward"</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Trauma/Orthopedics"</span>,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Intensive care unit"</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Other ward (not listed above)"</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Unknown"</span>,</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>                 <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"???"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>We are dealing with 14 hospitals in 10 provinces.</p>
+<p><strong>Note:</strong> <code>An Giang</code> and <code>Soc Trang</code> both have a children hospital. <code>HCMC</code> has 2 children hospitals.</p>
+<p><strong>Note:</strong> in 2025,</p>
+<ul>
+<li><code>Soc Trang</code> became <code>Can Tho</code></li>
+<li><code>Binh Phuoc</code> became <code>Dong Nai</code></li>
+<li><code>Binh Dinh</code> became <code>Gia Lai</code></li>
+<li><code>BVDK Binh Dinh</code> became <code>BVDK Trung tam tinh Gia Lai</code></li>
+</ul>
+</section>
+<section id="looking-at-the-data" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="looking-at-the-data"><span class="header-section-number">5</span> Looking at the data</h2>
 </section>
 
 </main>

@@ -113,18 +113,18 @@ A tuning of the `grep()` function:
 grep2 <- function(...) grep(..., ignore.case = TRUE, value = TRUE)
 ```
 
-
-## Reading the data
+A function that insert a character string at a given position inside another character
+string:
 
 ```{r}
-recode_sex <- function(x) {
-  tmp <- na.exclude(unique(x$Gender))
-  females <- c("F", "f", grep2("^.a", grep2("^n", tmp), invert = TRUE))
-  males <- setdiff(tmp, females)
-  mutate(x, across(Gender, ~ case_match(.x, females ~ "female", males ~ "male",
-                                        .default = .x)))
+insert <- function(x, at, what) {
+  str_sub(x, at, at - 1) <- what
+  x
 }
 ```
+
+
+## Reading the data
 
 Takes 3.5":
 
@@ -157,6 +157,7 @@ dataset <- path2data |>
                   tolower() |> 
                   replace_values(c("f", "nu", "nuu", "nux", "nnu") ~ "female",
                                  c("m", "nam", ",m")               ~   "male")),
+         across(Hospital_name, ~ stri_trans_general(.x, "any-ascii")),
          across(Province, ~ .x |>
                   stri_trans_general("any-ascii") |> 
                   replace_values("Can Tho_former Soc Trang"   ~ "Can Tho",
@@ -168,21 +169,31 @@ dataset <- path2data |>
                                  "HCM"                        ~ "HCMC",
                                  "HUE"                        ~ "Hue",
                                  "QN"                         ~ "Quang Ngai",
-                                 "Nu"                         ~ "Quang Ngai")))
+                                 "Nu"                         ~ "Quang Ngai")),
+         across(Participant_no, ~ sprintf("%04s", .x)),
+         across(Collection_no,  ~ sprintf("%02s", .x)),
+         across(Sample_ID, ~ str_remove_all(.x, " ")),
+         across(Sample_ID, ~ ifelse(nchar(.x) < 15, insert(.x, 13, "0"), .x)),
+         across(Age_group, ~ .x |>
+                  str_remove_all(" ") |>
+                  str_replace("≤&<", ",")),
+         across(Age_group, ~ paste0("[", .x, ")")),
+         across(Dept., ~ .x |>
+                  stri_trans_general("any-ascii") |>
+                  tolower()),
+         across(Dept., ~ case_when(
+           str_starts(.x, "kha|p|khoa kham benh") ~ "0",
+           str_starts(.x, "nh|nn|no|ns|nt|th|ti|tt|khoa nh|khoa no|mat|tk|tm") ~ "2",
+           str_starts(.x, "ng| khoa ngoai nhi|khoa ngoai nhi") ~ "3",
+           str_starts(.x, "chan|ccth|ctch|khoa chan thuong") ~ "4",
+           str_starts(.x, "hs|hctc-cdn|khoa icu") ~ "5",
+           str_starts(.x, paste0("cap|d|g|l|r|s|ta|tr|u|y| khoa cap cuu nhi| khoa noi",
+                                 " nhi|hhls|khoa cap cuu nhi|khoa don nguyen dich vu ",
+                                 "nhi|khoa lien chuyen khoa|khoa sanh|khoa so sinh|kl",
+                                 "ck|cc")) ~ "6",
+           .default = .x)),
+         across(Dept., as.numeric))
 ```
-
-```{r}
-
-```
-
-
-
-**Note:** in 2025,
-
-* Soc Trang became Can Tho
-* Binh Phuoc became Dong Nai
-* Binh Dinh became Gia Lai
-
 
 ```{r include = FALSE}
 if (file_exists("dataset.rds")) {
@@ -215,29 +226,74 @@ if (file_exists("dataset.rds")) {
                     stri_trans_general("any-ascii") |>
                     tolower() |> 
                     replace_values(c("f", "nu", "nuu", "nux", "nnu") ~ "female",
-                                   c("m", "nam", ",m") ~ "male")))
+                                   c("m", "nam", ",m")               ~   "male")),
+           across(Hospital_name, ~ stri_trans_general(.x, "any-ascii")),
+           across(Province, ~ .x |>
+                    stri_trans_general("any-ascii") |> 
+                    replace_values("Can Tho_former Soc Trang"   ~ "Can Tho",
+                                   "Daklak"                     ~ "Dak Lak",
+                                   "Dong Nai_former Binh Phuoc" ~ "Dong Nai",
+                                   "DT"                         ~ "Dong Thap",
+                                   "Gia Lai_fomer Binh Dinh"    ~ "Gia Lai",
+                                   "Gia Lai_former Binh Dinh"   ~ "Gia Lai",
+                                   "HCM"                        ~ "HCMC",
+                                   "HUE"                        ~ "Hue",
+                                   "QN"                         ~ "Quang Ngai",
+                                   "Nu"                         ~ "Quang Ngai")),
+           across(Participant_no, ~ sprintf("%04s", .x)),
+           across(Collection_no,  ~ sprintf("%02s", .x)),
+           across(Sample_ID, ~ str_remove_all(.x, " ")),
+           across(Sample_ID, ~ ifelse(nchar(.x) < 15, insert(.x, 13, "0"), .x)),
+           across(Age_group, ~ .x |>
+                    str_remove_all(" ") |>
+                    str_replace("≤&<", ",")),
+           across(Age_group, ~ paste0("[", .x, ")")),
+           across(Dept., ~ .x |>
+                    stri_trans_general("any-ascii") |>
+                    tolower()),
+           across(Dept., ~ case_when(
+             str_starts(.x, "kha|p|khoa kham benh") ~ "0",
+             str_starts(.x, "nh|nn|no|ns|nt|th|ti|tt|khoa nh|khoa no|mat|tk|tm") ~ "2",
+             str_starts(.x, "ng| khoa ngoai nhi|khoa ngoai nhi") ~ "3",
+             str_starts(.x, "chan|ccth|ctch|khoa chan thuong") ~ "4",
+             str_starts(.x, "hs|hctc-cdn|khoa icu") ~ "5",
+             str_starts(.x, paste0("cap|d|g|l|r|s|ta|tr|u|y| khoa cap cuu nhi| khoa noi",
+                                   " nhi|hhls|khoa cap cuu nhi|khoa don nguyen dich vu ",
+                                   "nhi|khoa lien chuyen khoa|khoa sanh|khoa so sinh|kl",
+                                   "ck|cc")) ~ "6",
+             .default = .x)),
+           across(Dept., as.numeric))
   saveRDScache(dataset, "dataset.rds")
 }
 ```
 
+Hospital departments:
+
 ```{r}
-map_int(dataset, ~ sum(is.na(.x)))
+departments <- c("Out-patient, not admitted to any ward",
+                 "Respiratory/chest ward",
+                 "Gastroenterology ward",
+                 "General surgical ward",
+                 "Trauma/Orthopedics",
+                 "Intensive care unit",
+                 "Other ward (not listed above)",
+                 "Unknown",
+                 NA, NA, "???")
 ```
 
-0: Out-patient, not admitted to any ward.
-1: Respiratory/chest ward
-2: Gastroenterology ward
-3: General surgical ward
-4: Trauma/Orthopedics
-5: Intensive care unit
-6: Other ward (not listed above)
-7: Unknown
+We are dealing with 14 hospitals in 10 provinces.
+
+**Note:** `An Giang` and `Soc Trang` both have a children hospital. `HCMC` has 2
+children hospitals.
+
+**Note:** in 2025,
+
+* `Soc Trang` became `Can Tho`
+* `Binh Phuoc` became `Dong Nai`
+* `Binh Dinh` became `Gia Lai`
+* `BVDK Binh Dinh` became `BVDK Trung tam tinh Gia Lai`
+
 
 ## Looking at the data
 
-```{r}
-dataset |> 
-  filter(is.na(Collection_year)) |> 
-  print(n = Inf)
-```
 
