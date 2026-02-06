@@ -156,26 +156,32 @@ dataset <- path2data |>
                   stri_trans_general("any-ascii") |>
                   tolower() |> 
                   replace_values(c("f", "nu", "nuu", "nux", "nnu") ~ "female",
-                                 c("m", "nam", ",m")               ~   "male")))
+                                 c("m", "nam", ",m")               ~   "male")),
+         across(Province, ~ .x |>
+                  stri_trans_general("any-ascii") |> 
+                  replace_values("Can Tho_former Soc Trang"   ~ "Can Tho",
+                                 "Daklak"                     ~ "Dak Lak",
+                                 "Dong Nai_former Binh Phuoc" ~ "Dong Nai",
+                                 "DT"                         ~ "Dong Thap",
+                                 "Gia Lai_fomer Binh Dinh"    ~ "Gia Lai",
+                                 "Gia Lai_former Binh Dinh"   ~ "Gia Lai",
+                                 "HCM"                        ~ "HCMC",
+                                 "HUE"                        ~ "Hue",
+                                 "QN"                         ~ "Quang Ngai",
+                                 "Nu"                         ~ "Quang Ngai")))
 ```
 
 ```{r}
-dataset |> 
-  mutate(across(Province, ~ .x |>
-                  stri_trans_general("any-ascii") |> 
-                  replace_values("Can Tho_former Soc Trang" ~ "Can Tho",
-                                 "Daklak" ~ "Dak Lak",
-                                 "Dong Nai_former Binh Phuoc" ~ "Dong Nai",
-                                 "DT" ~ "Dong Thap",
-                                 "Gia Lai_fomer Binh Dinh" ~ "Gia Lai",
-                                 "Gia Lai_former Binh Dinh" ~ "Gia Lai",
-                                 "HCM" ~ "HCMC",
-                                 "HUE" ~ "Hue",
-                                 "QN" ~ "Quang Ngai",
-                                 "Nu" ~ "Quang Ngai"))) |> 
-  pull(Province) |> 
-  table()
+
 ```
+
+
+
+**Note:** in 2025,
+
+* Soc Trang became Can Tho
+* Binh Phuoc became Dong Nai
+* Binh Dinh became Gia Lai
 
 
 ```{r include = FALSE}
