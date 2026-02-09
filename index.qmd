@@ -81,6 +81,9 @@ saveRDScache <- function(object, file) saveRDS(object, make_path(file))
 ```{r}
 bissexts <- seq(1952, 2030, 4)
 not31 <- c(2, 4, 6, 9, 11)
+hash <- rep(31, 12)
+hash[not31] <- 30
+hash
 ```
 
 
@@ -277,8 +280,7 @@ departments <- c("Out-patient, not admitted to any ward",
                  "Trauma/Orthopedics",
                  "Intensive care unit",
                  "Other ward (not listed above)",
-                 "Unknown",
-                 NA, NA, "???")
+                 "Unknown", NA, NA, "Unknown")
 ```
 
 We are dealing with 14 hospitals in 10 provinces.
@@ -293,7 +295,86 @@ children hospitals.
 * `Binh Dinh` became `Gia Lai`
 * `BVDK Binh Dinh` became `BVDK Trung tam tinh Gia Lai`
 
+```{r}
+map_int(dataset, ~ sum(is.na(.x)))
+```
+
 
 ## Looking at the data
 
+```{r}
+dataset |> 
+  filter(is.na(Collection_year)) |> 
+  map_int(~ sum(is.na(.x)))
+```
+
+```{r}
+round_runif <- function(to) round(runif(1, 1, to))
+rgb2 <- function(...) rgb(..., maxColorValue = 255)
+pie2 <- function(...) pie(..., border = "white")
+blue <- rgb2(0, 115, 195)
+orange <- rgb2(255, 121, 46)
+```
+
+```{r fig_recruitment}
+dataset |> 
+  filter_out(is.na(Collection_year)) |> 
+  mutate(across(Collection_day,
+                ~ ifelse(is.na(.x),
+                         ifelse(Collection_month == 2, 
+                                ifelse(Collection_year %in% bissexts,
+                                       round_runif(29), round_runif(28)),
+                                round_runif(hash[Collection_month])), .x)),
+         collection_date = ymd(paste(Collection_year, Collection_month,
+                                     Collection_day))) |> 
+  group_by(collection_date) |> 
+  tally() |> 
+  mutate(n = cumsum(n)) %>%
+  bind_rows(tibble(collection_date = ymd(20210101), n = NA), .) |> 
+  with(plot(collection_date, n, type = "l", lwd = 3, axes = FALSE,
+            col = orange, xlab = NA, ylab = "number of samples"))
+
+yrs <- 2021:2026
+axis(1, ymd(paste0(yrs, "0101")), yrs)
+axis(2)
+```
+
+```{r fig_sample_origin}
+dataset |> 
+  filter(Dept. < 7, ! is.na(Dept.)) |> 
+  group_by(Dept. < 1) |> 
+  tally() |> 
+  pull(n) |> 
+  pie2(NA, init.angle = 90, col = c(orange, blue))
+```
+
+```{r fig_gender}
+dataset |> 
+  filter_out(is.na(Gender)) |> 
+  group_by(Gender) |> 
+  tally() |> 
+  pull(n) |> 
+  pie2(NA, clockwise = TRUE, col = c(blue, orange))
+```
+
+```{r fig_age_group}
+tmp <- dataset |> 
+  mutate(across(Age_group, ~ .x |>
+                  str_remove("\\[") |> 
+                  str_remove(",.*$") |> as.integer()))
+
+tmp |> 
+  group_by(Age_group < 20) |> 
+  tally() |> 
+  pull(n) |> 
+  pie2(NA, init.angle = 90, col = c(orange, blue))
+```
+
+```{r fig_age_distribution}
+tmp |> 
+  group_by(Age_group) |> 
+  tally() |> 
+  pull(n) |> 
+  barplot(col = blue)
+```
 
